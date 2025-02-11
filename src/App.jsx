@@ -8,7 +8,10 @@ function App() {
   const [proposedPrice, setProposedPrice] = useState('')
   const [actualPrice, setActualPrice] = useState(0)
   const [dueDate, setDueDate] = useState('')
+  const [actualPriceTotal, setActualPriceTotal] = useState(0)
+  const [proposedPriceTotal, setProposedPriceTotal] = useState(0)
   const [editingItem, setEditingItem] =useState(null)
+ 
 
   const handleItemNameOnChange = (e) => {
     setItemName(e.target.value)
@@ -34,18 +37,18 @@ const handleDueDateOnChange = (e) => {
 const handleAddItems = async (event) => {
   event.preventDefault()
   const itemData = {
-    itemName: itemName, 
+    itemName, 
     proposedPrice : parseFloat(proposedPrice),
     actualPrice: parseFloat(actualPrice),
     dueDate
   };
 
-if(editingItem){
-  await updateItem({...itemData, id: editingItem})
-  setEditingItem(null)
-} else{
+// if(editingItem){
+//   await updateItem({...itemData, id: editingItem})
+//   setEditingItem(null)
+// } else{
   await addItem(itemData)
-}
+// }
 
 setItemName('')
 setProposedPrice('')
@@ -62,6 +65,30 @@ const handleDelete = async (id) => {
   // refresh the list after deleting
 }
 
+const actPriceTotal = items.reduce((acc, item) =>
+  acc + item.actualPrice, 0)
+// console.log(actPriceTotal)
+
+// updating the proposePrice
+useEffect(() => {
+  const proPriceTotal = items.reduce((acc, item) => 
+    acc + item.proposedPrice, 0
+    )
+    setProposedPriceTotal(proPriceTotal)
+    console.log(proPriceTotal)
+}, [items])
+
+
+// handling done item (a toggle)
+const handleOnChangeIsDone = async (id, event) => {
+if(event.target.checked){
+await updateItem(id, {isDone: true})
+}else{
+await updateItem(id, {isDone: false})
+}
+// refetch item to refresh the state
+fetchItems()
+} 
 
 
 useEffect(() => {
@@ -115,40 +142,63 @@ useEffect(() => {
 
 <p className='font-mono pl-7 my-5 mx-6'>We've got you covered, here are your list 👇</p>
 
-<section className=' my-5 mx-7 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-4 md:grid-cols-3 gap-4'>
-  {
-    items.map((eachItem) => (
-      <div key={eachItem.id} className='border rounded-md p-5'>
-<div>
-<p>{eachItem.ItemName}</p>
+<section className='flex justify-center items-center my-4'>
 
-<div className='flex justify-between items-center'>
-  <p className='font-semibold'>Actual Price ($)</p>
-<p>{eachItem.actualPrice}</p>
+<div className='relative overflow-x-auto shadow-md rounded-md  sm:rounded-lg'>
+<table className='w-full text-sm text-left rtl:text-right text-gray-500'>
+  <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
+    <tr>
+      <th scope='col' className='px-6 py-3 rounded-none'>Item name</th>
+      <th className='px-6 py-3'>Actual price ($)</th>
+      <th className='px-6 py-3'>Proposed price ($)</th> 
+      <th className='px-6 py-3 text-red-600'>due date</th> 
+      <th className='px-6 py-3 text-green-600'>done</th>
+      <th className='px-6 py-3 '>action</th> 
+      
+    </tr>
+  </thead>
+  <tbody className=''>
+    {
+      items.map((item) => (
+<tr key={item.id} className='bg-white border-b border-gray-200'>
+  <th scope='row' className='px-6 py-4 font-medium text-gray-900 whitespace-nowrap line-through'>{item.itemName}</th>
+  <td className='px-6 py-4 line-through'>$ {item.actualPrice}</td>
+  <td className='px-6 py-4 line-through'>${item.proposedPrice}</td>
+  <td className={`px-6 py-4 ${item.isDone ? 'line-through' : ''}`}>{item.dueDate}</td>
+  <td scope='col' className='p-4'>
+    <div className='flex items-center px-4'>
+      <input type="checkbox" id='checkbox-done' className='w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2' checked={item.isDone} onChange={event => handleOnChangeIsDone(item.id, event)} />
+      <label htmlFor="checkbox-done" className='sr-only'>checkbox</label>
+    </div>
+  </td>
+  <td className='flex items-center px-6 py-4'>
+{/* icon */}
+<button className='font-medium text-blue-600 hover:underline'>Edit</button>
+<button onClick={() => handleDelete(item.id)} className='font-medium text-red-600 hover:underline ms-3'>Delete</button>
+  </td>
+</tr>
+      ))
+    }
+    
+  </tbody>
+  <tfoot>
+    <tr className='font-semibold text-gray-900'>
+      <th scope='row' className='text-base px-6 py-4'>Total:</th>
+      <td className='px-6 py-4'>${actualPriceTotal}</td>
+      <td className='px-6 py-4'>${proposedPriceTotal}</td>
+    </tr>
 
+  </tfoot>
+</table>
+
+<div className='flex justify-end'>
+<button className='bg-green-600 text-gray-100 p-2 rounded-md shadow-md m-2 font-semibold text-sm'>Download PDF</button>
 </div>
 
-
-<div className='flex justify-between items-center'>
-  <span className='font-semibold'>Proposed Price ($) :</span>
-<input type='number' disabled className=' w-16 text-center border rounded-md py-1' value={eachItem.proposedPrice}/> 
- 
 </div>
-
-<p className='my-2 font-semibold text-red-400'>{eachItem.dueDate}</p>
-</div>
-
-<div className='flex justify-between'>
-<button className='w-[70px] bg-gray-600 text-white rounded-md border-none' >edit</button>
-<button className='p-2 bg-red-500 rounded-md border-none' onClick={() => handleDelete(eachItem.id)}>delete</button>
-<button className='p-2 bg-green-500 rounded-md border-none text-white font-semibold'>download pdf</button>
-</div>
+</section>
 
 
-      </div>
-    ))
-  }
-  </section>
 </section>
     
 
