@@ -20,8 +20,8 @@ export const getItems = async () => {
 
 // function to update an existing item
 
-export const updateItem = async (id, isDone) => {
-    await db.items.update(id, isDone)
+export const updateItem = async (id, item) => {
+    await db.items.update(id, item)
 }
 
 // export const updateItem = async (item) => {

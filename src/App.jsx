@@ -86,6 +86,7 @@ await updateItem(id, {isDone: true})
 }else{
 await updateItem(id, {isDone: false})
 }
+setProposedPrice(0)
 // refetch item to refresh the state
 fetchItems()
 } 
@@ -161,9 +162,9 @@ useEffect(() => {
     {
       items.map((item) => (
 <tr key={item.id} className='bg-white border-b border-gray-200'>
-  <th scope='row' className='px-6 py-4 font-medium text-gray-900 whitespace-nowrap line-through'>{item.itemName}</th>
-  <td className='px-6 py-4 line-through'>$ {item.actualPrice}</td>
-  <td className='px-6 py-4 line-through'>${item.proposedPrice}</td>
+  <th scope='row' className={`px-6 py-4 font-medium text-gray-900 whitespace-nowrap ${item.isDone ? 'line-through' : ''}`}>{item.itemName}</th>
+  <td className={`px-6 py-4 ${item.isDone ?'line-through' : ''}`}>$ {item.actualPrice}</td>
+  <td className={`px-6 py-4 ${item.isDone ? 'line-through' : ''}`}>${item.proposedPrice}</td>
   <td className={`px-6 py-4 ${item.isDone ? 'line-through' : ''}`}>{item.dueDate}</td>
   <td scope='col' className='p-4'>
     <div className='flex items-center px-4'>
