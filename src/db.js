@@ -4,8 +4,8 @@ import Dexie from "dexie";
 const db = new Dexie('marketList')
 
 // database schema
-db.version(2).stores({
-    items: '++id, itemName, prosposedPrice, actualPrice, dueDate, isDone, actualTotal, proposedTotal'
+db.version(3).stores({
+    items: '++id, itemName, prosposedPrice, dueDate, isDone, active, proposedTotal'
 })
 
 // function to add a new item
@@ -24,9 +24,9 @@ export const updateItem = async (id, item) => {
     await db.items.update(id, item)
 }
 
-// export const updateItem = async (item) => {
-//     await db.items.put(item)
-// }
+export const updateEditItem = async (itemId,item) => {
+    await db.items.update(itemId,item)
+}
 
 // functio to delete an item by id
 export const deleteItem = async (id) => {

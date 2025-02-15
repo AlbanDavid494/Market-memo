@@ -1,81 +1,79 @@
 import React, {useState, useEffect} from 'react'
-import {addItem, deleteItem, getItems, updateItem} from './db'
+import {addItem, deleteItem, getItems, updateItem, updateEditItem} from './db'
+import Edit from './Components/Edit'
+import EditModal from './Components/EditModal'
+import { MdDelete } from "react-icons/md";
 
 
 function App() {
   const [items, setItems] = useState([])
-  const [itemName, setItemName] = useState('')
-  const [proposedPrice, setProposedPrice] = useState('')
-  const [actualPrice, setActualPrice] = useState(0)
-  const [dueDate, setDueDate] = useState('')
-  const [actualPriceTotal, setActualPriceTotal] = useState(0)
-  const [proposedPriceTotal, setProposedPriceTotal] = useState(0)
-  const [editingItem, setEditingItem] =useState(null)
- 
+  const[refresh, setRefresh] = useState(false)
+  const [itemData, setItemData] = useState({
+    itemName: '',
+    price: '',
+    date: '',
+    isDone: false
+  })
 
-  const handleItemNameOnChange = (e) => {
-    setItemName(e.target.value)
+  const [proposedPriceTotal, setProposedPriceTotal] = useState(parseFloat(0))
+  const [editingItem, setEditingItem] = useState(null)
+  const [editDetails, setEditDetails] = useState({})
+  const [editDetailId, setEditDetailId] =useState('')
+  
+  // handling editing toggle
+  const [isEditToggle, setIsEditToggle] = useState(false)
+
+  const handleEditItem = (itemDetails, itemDetailsId) => {
+    setIsEditToggle(!isEditToggle)
+    setEditDetails(itemDetails)
+    setEditDetailId(itemDetailsId)
   }
 
-  const handlePropesedPriceOnChange = (e) => {
-    setProposedPrice(e.target.value)
+
+  const handleItemChange = (e) => {
+    setItemData({...itemData, [e.target.name]: e.target.value})
   }
 
-  const handleActualPriceOnChange = (e) => {
-    setActualPrice(e.target.value)
-  }
 
-const handleDueDateOnChange = (e) => {
-  setDueDate(e.target.value)
-}
 
   const fetchItems = async () => {
     const allItems = await getItems();
     setItems(allItems)
   }
 
+  // function to handle add items
 const handleAddItems = async (event) => {
   event.preventDefault()
-  const itemData = {
-    itemName, 
-    proposedPrice : parseFloat(proposedPrice),
-    actualPrice: parseFloat(actualPrice),
-    dueDate
-  };
-
-// if(editingItem){
-//   await updateItem({...itemData, id: editingItem})
-//   setEditingItem(null)
-// } else{
-  await addItem(itemData)
-// }
-
-setItemName('')
-setProposedPrice('')
-setActualPrice('')
-setDueDate('')
-fetchItems()   
-// refreshes after adding or refreshing
+  // console.log(itemData)
+ 
+await addItem(itemData)
+setItemData({
+  itemName: '',
+  price: '',
+  date: '',
+  isDone: false
+})
+setRefresh(!refresh)
 
 }
 
+// function to handle delete items
 const handleDelete = async (id) => {
   await deleteItem(id)
-  fetchItems()
   // refresh the list after deleting
+  fetchItems()
 }
 
-const actPriceTotal = items.reduce((acc, item) =>
-  acc + item.actualPrice, 0)
-// console.log(actPriceTotal)
+
+
 
 // updating the proposePrice
 useEffect(() => {
   const proPriceTotal = items.reduce((acc, item) => 
-    acc + item.proposedPrice, 0
+    acc + parseFloat(item.price), 0
     )
     setProposedPriceTotal(proPriceTotal)
-    console.log(proPriceTotal)
+    // console.log(proPriceTotal)
 }, [items])
 
 
@@ -86,8 +84,6 @@ await updateItem(id, {isDone: true})
 }else{
 await updateItem(id, {isDone: false})
 }
-setProposedPrice(0)
-// refetch item to refresh the state
 fetchItems()
 } 
 
@@ -95,10 +91,13 @@ fetchItems()
 useEffect(() => {
   fetchItems();
   // when components mounts fetch items
-},[])
+},[refresh])
+
+
+
 
   return (
-    <>
+    <section className='relative'>
     <h2 className='text-3xl m-4 font-semibold'>Market memo</h2>
     <p className='text-gray-600 font-mono ml-5 my-3'>Welome to Market memo , the ultimate shopping companion. <br />With Market memo, You can effortlessly create and manage your market lists, ensuring that you never forget an item again.</p>
 
@@ -108,22 +107,22 @@ useEffect(() => {
 
 <div className='block relative my-2'>
   <label htmlFor="title" className='pl-1'>Item name</label>
-  <input type="text" value={itemName} onChange={handleItemNameOnChange} className='border w-full p-2 my-1 rounded-md outline-none' placeholder='name of your item' required  />
+  <input type="text" value={itemData.itemName} name='itemName' onChange={handleItemChange} className='border w-full p-2 my-1 rounded-md outline-none' placeholder='name of your item' required  />
 </div>
 
 <div className='block relative'>
   <label htmlFor="title" className='pl-1'>proposed amount $</label>
-  <input type="number" value={proposedPrice} onChange={handlePropesedPriceOnChange} className='border w-full p-2 my-1 rounded-md outline-none' placeholder='amount of your item' required />
+  <input type="number" name='price' value={itemData.price} onChange={handleItemChange} className='border w-full p-2 my-1 rounded-md outline-none' placeholder='amount of your item' required />
 </div>
 
-<div className='block relative my-2'>
-  <label htmlFor="title" className='pl-1'>actual amount $</label>
-  <input type="number" value={actualPrice} disabled onChange={handleActualPriceOnChange} className='border w-full p-2 my-1 rounded-md outline-none' placeholder='amount of your item' required  />
-</div>
+{/* <div className='block relative my-2'>
+  <label htmlFor="title" className='pl-1'>Quantity</label>
+  <input type="number" value={quantity} onChange={handleQuantityOnChange} className='border w-full p-2 my-1 rounded-md outline-none' placeholder='quantity of your item' required  />
+</div> */}
 
 <div className='block relative my-2'>
-  <label htmlFor="dueDate" className='pl-1'>Due Date</label>
-  <input type="date" value={dueDate} onChange={handleDueDateOnChange} name="dueDate" id="dueDate" className='border w-full p-2 rounded-md my-1 outline-none' required/>
+  <label htmlFor="dueDate" className='pl-1'>Date for purchase</label>
+  <input type="date" name='date' placeholder='Date for purchase' value={itemData.date} onChange={handleItemChange} id="dueDate" className='border w-full p-2 rounded-md my-1 outline-none' required/>
 </div>
 
 
@@ -137,11 +136,24 @@ useEffect(() => {
 
     </section>
 
+ {
+  isEditToggle &&  <EditModal  setEditingItem={setEditingItem} isEditToggle={isEditToggle} editDetailId={editDetailId} editDetails={editDetails} setIsEditToggle={setIsEditToggle} fetchItems={fetchItems}/> 
+  
+ }   
 
 {/* market list */}
 <section>
 
 <p className='font-mono pl-7 my-5 mx-6'>We've got you covered, here are your list 👇</p>
+<p className='font-mono pl-7 my-5 mx-6'>smaller screens scroll left 👈</p>
+
+<section className='flex justify-end'>
+<div className='flex justify-between w-[600px] px-6 mt-2 mb-5'>
+<p>Remaining List items: {items.length}</p>
+</div>
+</section>
+
+
 
 <section className='flex justify-center items-center my-4'>
 
@@ -150,9 +162,9 @@ useEffect(() => {
   <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
     <tr>
       <th scope='col' className='px-6 py-3 rounded-none'>Item name</th>
-      <th className='px-6 py-3'>Actual price ($)</th>
+      {/* <th className='px-6 py-3'>Quantity</th> */}
       <th className='px-6 py-3'>Proposed price ($)</th> 
-      <th className='px-6 py-3 text-red-600'>due date</th> 
+      <th className='px-6 py-3 text-red-600'>Date for purchase</th> 
       <th className='px-6 py-3 text-green-600'>done</th>
       <th className='px-6 py-3 '>action</th> 
       
@@ -163,19 +175,19 @@ useEffect(() => {
       items.map((item) => (
 <tr key={item.id} className='bg-white border-b border-gray-200'>
   <th scope='row' className={`px-6 py-4 font-medium text-gray-900 whitespace-nowrap ${item.isDone ? 'line-through' : ''}`}>{item.itemName}</th>
-  <td className={`px-6 py-4 ${item.isDone ?'line-through' : ''}`}>$ {item.actualPrice}</td>
-  <td className={`px-6 py-4 ${item.isDone ? 'line-through' : ''}`}>${item.proposedPrice}</td>
-  <td className={`px-6 py-4 ${item.isDone ? 'line-through' : ''}`}>{item.dueDate}</td>
+  {/* <td className={`px-6 py-4 ${item.isDone ?'line-through' : ''}`}> {item.quantity}</td> */}
+  <td className={`px-6 py-4 ${item.isDone ? 'line-through' : ''}`}>${item.price}</td>
+  <td className={`px-6 py-4 ${item.isDone ? 'line-through' : ''}`}>{item.date}</td>
   <td scope='col' className='p-4'>
     <div className='flex items-center px-4'>
-      <input type="checkbox" id='checkbox-done' className='w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2' checked={item.isDone} onChange={event => handleOnChangeIsDone(item.id, event)} />
+      <input type="checkbox" id='checkbox-done' className='w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2' onChange={(event) => handleOnChangeIsDone(item.id, event)} />
       <label htmlFor="checkbox-done" className='sr-only'>checkbox</label>
     </div>
   </td>
   <td className='flex items-center px-6 py-4'>
 {/* icon */}
-<button className='font-medium text-blue-600 hover:underline'>Edit</button>
-<button onClick={() => handleDelete(item.id)} className='font-medium text-red-600 hover:underline ms-3'>Delete</button>
+<Edit handleOnClickToggle={() => handleEditItem(item, item.id)} />
+<MdDelete onClick={() => handleDelete(item.id)} className='font-medium cursor-pointer text-2xl text-red-600 hover:underline ms-3' title='delete item'/>
   </td>
 </tr>
       ))
@@ -185,7 +197,7 @@ useEffect(() => {
   <tfoot>
     <tr className='font-semibold text-gray-900'>
       <th scope='row' className='text-base px-6 py-4'>Total:</th>
-      <td className='px-6 py-4'>${actualPriceTotal}</td>
+      {/* <td className='px-6 py-4'>{quantity}</td> */}
       <td className='px-6 py-4'>${proposedPriceTotal}</td>
     </tr>
 
@@ -203,7 +215,7 @@ useEffect(() => {
 </section>
     
 
-    </>
+    </section>
   )
 }
 
