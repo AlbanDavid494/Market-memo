@@ -54,13 +54,13 @@ setItemData({
   isDone: false
 })
 setRefresh(!refresh)
-
+alert('item added!')
 }
 
 // function to handle delete items
 const handleDelete = async (id) => {
   await deleteItem(id)
-  alert("Item deleted")
+  alert("Item deleted!")
   // refresh the list after deleting
   fetchItems()
 }
@@ -82,10 +82,12 @@ useEffect(() => {
 const handleOnChangeIsDone = async (id, event) => {
 if(event.target.checked){
 await updateItem(id, {isDone: true})
+alert('item done!')
 }else{
 await updateItem(id, {isDone: false})
+alert("Item undone!")
 }
-alert("Item added")
+
 fetchItems()
 } 
 
