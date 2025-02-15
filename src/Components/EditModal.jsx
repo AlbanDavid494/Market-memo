@@ -18,6 +18,7 @@ name: '',
 price: '',
 date: ''
         })
+        alert('item details canceled')
       }
 
 const handleOnChange = (e) => {
@@ -32,6 +33,7 @@ const handleEditSave = async (inputItems, event) => {
     await updateEditItem(editDetailId, inputItems)
     setIsEditToggle(!isEditToggle)
     fetchItems()
+    alert("item updated!")
     }
 
    

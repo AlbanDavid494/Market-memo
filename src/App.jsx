@@ -60,6 +60,7 @@ setRefresh(!refresh)
 // function to handle delete items
 const handleDelete = async (id) => {
   await deleteItem(id)
+  alert("Item deleted")
   // refresh the list after deleting
   fetchItems()
 }
@@ -84,6 +85,7 @@ await updateItem(id, {isDone: true})
 }else{
 await updateItem(id, {isDone: false})
 }
+alert("Item added")
 fetchItems()
 } 
 
